@@ -64,7 +64,7 @@ jobs:
           file: ./build/Dockerfile
           platforms: ${{ env.PLATFORMS }}
           tags: |
-            ${{ steps.repo.outputs.repo }}:build
-            ${{ steps.repo.outputs.repo }}:${{ steps.version.outputs.version }}-build
+            ghcr.io/from-nibly/protonmail-bridge:build
+            ghcr.io/from-nibly/protonmail-bridge:${{ steps.version.outputs.version }}-build
           labels: ${{ steps.docker_meta.outputs.labels }}
           push: ${{ github.event_name != 'pull_request' }}
