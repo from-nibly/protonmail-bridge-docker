@@ -14,9 +14,8 @@ on:
       - build/*
 
 env:
-  DOCKER_REPO: shenxn/protonmail-bridge
-  DOCKER_REPO_DEV: ghcr.io/shenxn/protonmail-bridge-dev
-  PLATFORMS: linux/amd64,linux/arm64/v8,linux/arm/v7,linux/riscv64
+  DOCKER_REPO: ghcr.io/from-nibly/protonmail-bridge
+  PLATFORMS: linux/amd64
 
 jobs:
   build:
@@ -32,14 +31,11 @@ jobs:
       - name: Set version
         id: version
         run: echo "::set-output name=version::`cat build/VERSION`"
-      - name: Set repo
-        id: repo
-        run: if [[ $GITHUB_REF == "refs/heads/master" ]]; then echo "::set-output name=repo::${DOCKER_REPO}"; else echo "::set-output name=repo::${DOCKER_REPO_DEV}"; fi
       - name: Docker meta
         id: docker_meta
         uses: crazy-max/ghaction-docker-meta@v1
         with:
-          images: ${{ steps.repo.outputs.repo }}
+          images: ${ghcr.io/from-nibly/protonmail-bridge}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -54,24 +50,6 @@ jobs:
           platforms: ${{ env.PLATFORMS }}
           push: true
           tags: localhost:5000/protonmail-bridge:latest
-      - name: Scan image
-        id: scan
-        uses: anchore/scan-action@v2
-        with:
-          image: localhost:5000/protonmail-bridge:latest
-          fail-build: true
-          severity-cutoff: critical
-          acs-report-enable: true
-      - name: Upload Anchore scan SARIF report
-        uses: github/codeql-action/upload-sarif@v1
-        with:
-          sarif_file: ${{ steps.scan.outputs.sarif }}
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' }}
-        with:
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/dev' }}
